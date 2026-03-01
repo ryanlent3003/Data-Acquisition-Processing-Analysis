@@ -1,0 +1,14 @@
+name: hyriver
+channels:
+  - conda-forge
+dependencies:
+  - contextily
+  - dataretrieval
+  - geopandas
+  - ipykernel
+  - nbformat
+  - py3dep
+  - pygeohydro
+  - pynhd
+  - pynldas2
+  - pyth

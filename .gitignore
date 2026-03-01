@@ -205,3 +205,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+#prevent geospatial files from being added to git, these are large and not needed for the project
+files/*
+SNOTEL_sln.ipynb
