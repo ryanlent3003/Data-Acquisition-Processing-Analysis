@@ -12,4 +12,4 @@ dependencies:
   - ipykernel
   - contextily
   - nbformat
-
+prefix: /uufs/chpc.utah.edu/common/home/u1154915/.conda/envs/hyriver

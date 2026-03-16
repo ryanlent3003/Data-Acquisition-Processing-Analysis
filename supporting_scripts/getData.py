@@ -8,6 +8,7 @@ import pandas as pd
 import pyproj
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import certifi
 pd.options.mode.chained_assignment = None
 
 def getSNOTELData(SiteName, SiteID, StateAbb, StartDate, EndDate, OutputFolder):
@@ -53,10 +54,41 @@ def getCaliSNOTELData(SiteName, SiteID, StartDate, EndDate, OutputFolder):
     url = url1+url2+url3+url4
     print(f'Start retrieving data for {SiteName}, {SiteID}')
     print(url)
+    
+    # Define custom headers
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept': 'text/csv,text/plain,application/csv',
+        'Connection': 'keep-alive'
+    }
 
-    http = urllib3.PoolManager()
-    response = http.request('GET', url)
+    # Add a timeout and retry strategy
+    # connect=2.0 (wait 2s to connect), read=10.0 (wait 10s for data)
+    timeout = urllib3.Timeout(connect=2.0, read=10.0)
+    retries = urllib3.Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
+
+    http = urllib3.PoolManager(
+        headers=headers, 
+        timeout=timeout, 
+        retries=retries,
+        block=False  # Prevents the pool from blocking if multiple requests overlap
+    )
+    
+    try:
+        # Set a short 10-second timeout
+        response = http.request('GET', url, timeout=10.0)
+        print(f"Status: {response.status}")
+    except urllib3.exceptions.MaxRetryError:
+        print("Error: The HPC network cannot reach the USDA server (Check Proxy).")
+    except urllib3.exceptions.TimeoutError:
+        print("Error: The request timed out (The server or firewall is not responding).")
+
+    #http = urllib3.PoolManager(headers={'User-Agent': 'SNOTEL-Data-Retrieval-Agent'})
+    # print('urllib3 PoolManager created')
+    # response = http.request('GET', url)
+    # print('Data retrieved from URL')
     data = response.data.decode('utf-8')
+    print('Data decoded from bytes to string')
     i=0
     for line in data.split("\n"):
         if line.startswith("#"):
